@@ -14,11 +14,13 @@
 <meta property="og:site_name" content="Li Minghang&#39;s Blog">
 <meta property="og:description" content="线程池和进程池线程安全​    单线程程序不会有线程安全的问题，但多线程程序就可能出现线程安全的问题，举个例子，当多个线程同时访问同一个数据时并对其做出操作时，可能会出错，原因是线程一访问某个数据并修改了它，但还没来得及保存，线程二也访问了这个数据，但取到的数据还是未修改的，所以线程二取到的是一个脏数据（错误数据）。 线程安全解决方案——加锁1.Lock锁123456789101112131415">
 <meta property="og:locale" content="en_US">
-<meta property="article:published_time" content="2020-11-13T12:25:14.205Z">
-<meta property="article:modified_time" content="2020-11-13T12:25:14.204Z">
+<meta property="og:image" content="http://example.com/root/blog/source/_posts/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%92%8C%E8%BF%9B%E7%A8%8B%E6%B1%A0/image-20201104200844753.png">
+<meta property="article:published_time" content="2020-11-13T12:30:05.015Z">
+<meta property="article:modified_time" content="2020-11-13T12:30:05.013Z">
 <meta property="article:author" content="LMH">
 <meta property="article:tag" content="Python">
 <meta name="twitter:card" content="summary">
+<meta name="twitter:image" content="http://example.com/root/blog/source/_posts/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%92%8C%E8%BF%9B%E7%A8%8B%E6%B1%A0/image-20201104200844753.png">
   
     <link rel="alternate" href="/atom.xml" title="Li Minghang&#39;s Blog" type="application/atom+xml">
   
@@ -70,7 +72,7 @@
         <section id="main"><article id="post-线程池和进程池" class="article article-type-post" itemscope itemprop="blogPost">
   <div class="article-meta">
     <a href="/2020/11/13/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%92%8C%E8%BF%9B%E7%A8%8B%E6%B1%A0/" class="article-date">
-  <time datetime="2020-11-13T12:25:14.205Z" itemprop="datePublished">2020-11-13</time>
+  <time datetime="2020-11-13T12:30:05.015Z" itemprop="datePublished">2020-11-13</time>
 </a>
     
   </div>
@@ -92,7 +94,7 @@
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> queue <span class="keyword">import</span> Queue</span><br><span class="line">q = Queue<span class="comment">#创建队列对象</span></span><br><span class="line"><span class="keyword">for</span> i <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>):</span><br><span class="line">    q.put(i)<span class="comment">#放数据</span></span><br><span class="line"><span class="keyword">while</span> <span class="literal">True</span>:</span><br><span class="line">    num = q.get()<span class="comment">#取数据</span></span><br><span class="line">    print(num)</span><br><span class="line"> </span><br></pre></td></tr></table></figure>
 
 <p>运行结果：代码不会报错，但也不会结束，队列在死循环中会一直等</p>
-<p>! [ output ] ( 线程池和进程池/image-20201104200844753.png )</p>
+<p><img src="/root/blog/source/_posts/%E7%BA%BF%E7%A8%8B%E6%B1%A0%E5%92%8C%E8%BF%9B%E7%A8%8B%E6%B1%A0/image-20201104200844753.png" alt="output"></p>
 <h3 id="线程池"><a href="#线程池" class="headerlink" title="线程池"></a>线程池</h3><p>线程池可以理解为将多个子线程统一管理工具</p>
 <p>实例代码</p>
 <figure class="highlight python"><table><tr><td class="gutter"><pre><span class="line">1</span><br><span class="line">2</span><br><span class="line">3</span><br><span class="line">4</span><br><span class="line">5</span><br><span class="line">6</span><br><span class="line">7</span><br><span class="line">8</span><br><span class="line">9</span><br><span class="line">10</span><br><span class="line">11</span><br><span class="line">12</span><br><span class="line">13</span><br><span class="line">14</span><br><span class="line">15</span><br><span class="line">16</span><br><span class="line">17</span><br></pre></td><td class="code"><pre><span class="line"><span class="keyword">from</span> threadpool <span class="keyword">import</span> ThreadPool,makeRequests</span><br><span class="line"><span class="keyword">import</span> time</span><br><span class="line"><span class="comment">#定义一个函数</span></span><br><span class="line"><span class="function"><span class="keyword">def</span> <span class="title">func</span>(<span class="params">a</span>):</span></span><br><span class="line">    time.sleep(<span class="number">1</span>)</span><br><span class="line">    print(a)</span><br><span class="line"><span class="comment">#创建线程池对象</span></span><br><span class="line">t_pool = ThreadPool(<span class="number">10</span>)<span class="comment">#线程池有10个子线程</span></span><br><span class="line"><span class="comment">#创建任务列表/makeRequests(任务对应的函数，函数的参数列表)</span></span><br><span class="line">task_lst = makeRequests(func,[x <span class="keyword">for</span> x <span class="keyword">in</span> <span class="built_in">range</span>(<span class="number">10</span>)])</span><br><span class="line"><span class="comment">#在线程池中添加任务</span></span><br><span class="line"><span class="keyword">for</span> task <span class="keyword">in</span> task_lst:</span><br><span class="line">    t_pool.putRequest(task)</span><br><span class="line">start_time = time.time()</span><br><span class="line">t_pool.wait()<span class="comment">#执行和等待</span></span><br><span class="line">end_time = time.time()</span><br><span class="line">print(<span class="string">f&#x27;执行时间：<span class="subst">&#123;end_time-start_time&#125;</span>s&#x27;</span>)</span><br></pre></td></tr></table></figure>
